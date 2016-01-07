@@ -1,0 +1,246 @@
+
+
+
+
+
+
+
+
+
+
+SmallWorlds
+Adventure and Mayhem in Smalltalk
+
+
+
+
+
+
+
+Bob Jarvis
+March, 2001
+
+Table of Contents
+
+LEGAL NOTICE	1
+CREATING AN ADVENTURE	2
+SMALLWORLDS CLASSES	3
+ACTOR	3
+ACTION	4
+COMMANDPARSER	4
+CONNECTION	4
+CONTAINER	4
+DARKLOCATION	4
+DESCRIBABLE	4
+FORWARDINGLOCATION	4
+IMMOVABLEITEM	5
+ITEM	5
+LIGHTSOURCE	5
+LOCATION	5
+REFLECTINGLOCATION	5
+RESPONSE	5
+SIMPLEACTOR	5
+SIMPLECOMMANDPARSER	5
+TERMINALLOCATION	5
+TREASURE	5
+WORLD	5
+NOTES	6
+DOLPHIN SMALLTALK	6
+Installation	6
+Testing	6
+PORTING	6
+COLOSSAL CAVE	6
+CONTACTING THE AUTHOR	7
+ 
+
+Legal Notice
+
+Copyright © 2001 Robert Jarvis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of SmallWorlds 
+and associated documentation files (the “Software”), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to 
+do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
+OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+This software is OSI Certified Open Source Software.
+OSI Certified is a certification mark of the Open Source Initiative. 
+
+Creating An Adventure
+
+Text adventure games (TAGs) are one of the classic forms of computer entertainment software.  
+In a TAG there are locations to move between, creatures to encounter and interact with, 
+treasures to be gained, puzzles to solve, and interesting ways to get killed.  Some examples of 
+this genre include the games published by Infocom fifteen years ago (including the Zork series, 
+Planetfall, and others), and the classic Colossal Cave adventure.  A version of Colossal Cave is 
+included with this software.
+
+SmallWorlds is an object-based construction set for building your worlds, as opposed to script-
+based engines such as the various tools which use the Infocom “Zork” language.  This is 
+intentional, as the motivation for writing SmallWorlds was to provide a demonstration of good 
+object-oriented development practices, as well as to have some fun.
+
+Following are some suggested steps to follow when creating your own adventures:
+
+1. Write up a description of the world.  Include such things as creatures to be encountered, 
+puzzles to be solved, and such.  Remember that in text adventures combat is boring, 
+relatively random, and adds little to the game.   The use of puzzles, locks-and-keys, and 
+such makes the game more interesting.
+2. Create a map of your world.  Give names to important locations, such as those that contain 
+monsters, treasures, or puzzles.  Determine how the locations are connected.
+3. Write descriptions for each location.
+4. Create a subclass of World for your new adventure.  Override #initialize to perform whatever 
+steps are necessary to get your world ready for play.  See ColossalCaveWorld>>initialize for 
+examples.
+5. Create a subclass of SimpleActor for the actor in your world.
+6. Create a subclass of AdventureShell to serve as the user interface for your world.  Override 
+the class #defaultModel method to answer the name of your World subclass.  (See 
+ColossalCaveShell for example).
+7. Evaluate “YourWorldShell show” in a workspace to start a new user interface connected to 
+an instance of your World subclass.
+8. Write code needed to handle special occurrences in your world.  Commonly you’ll override 
+Actor methods in your SimpleActor subclass (created in step 5) to handle special cases.  
+You may also need to subclass Location so your can override #receiveActor:, or you may 
+need to add code elsewhere for other special circumstances.
+9. Iterate these steps until you’re satisfied.
+
+SmallWorlds Classes
+
+Actor
+An object that is capable of processing commands.  The following diagram illustrates 
+how commands are processed by Actor:
+
+Action
+An individual action which an Actor can execute.
+CommandParser
+Parses a command string, producing a collection of Actions that an Actor can execute.
+Connection
+Represents a connection from one location to another.  Connections are one way only - 
+to have a bi-directional connection between Locations each Location must have a 
+Connection leading to the other.  Connections can optionally have a key object specified, 
+in which case they can be locked and unlocked.
+Container
+Something in the world that can contain other things.
+DarkLocation
+A service subclass of Location that is created with its lighted attribute set to false.
+Describable
+Something which has a description.  There are two description styles available, noun-
+phrase descriptions and text descriptions.  Noun-phrase descriptions are most 
+commonly used by Items, and text descriptions are commonly used by other objects 
+(e.g. Locations).
+ForwardingLocation
+A location that receives an Actor, generates a response containing the description of the 
+location, and forwards the Actor on to another location.
+ImmovableItem
+An item which cannot be picked up by an Actor.
+Item
+A 'thing' in the database which is not an actor (e.g. is passive, not active), e.g. lamp, key, 
+rod, etc.
+LightSource
+An item which generates light.  May be switched on or off.
+Location
+A place which can be visited.  Has a collection of Connections to other Locations.
+ReflectingLocation
+A Location that generates a response containing its description then returns the Actor to 
+its previous location.
+Response
+The response from a command.  Useful for maintaining a history of what has happened.  
+Contains Strings such as 'The door is unlocked', 'The lamp is now lit', 'You are in a maze 
+of little rooms, all alike', etc.  Generally speaking Responses should only be answered by 
+methods in Actor or its subclasses.  
+SimpleActor
+A subclass of Actor which uses a SimpleCommandParser to parse commands.
+SimpleCommandParser
+A command parser which can understand simple commands of up to two words, such as
+    go north --> Action new verb: #move with: #('north')
+    south --> Action new verb: #move with: #('south')
+    get anItemName --> Action new verb: #get with: #('anItemName')
+Verbs should be implemented as messages by Actors.
+TerminalLocation
+A location which kills Actors which move into it.
+Treasure
+Items for which the player gets points.
+World
+The container for all things in an adventure.
+
+
+Notes
+
+Dolphin Smalltalk
+Installation
+1. Unzip the archive into a directory, then install the SmallWorlds package.  You 
+can also install the ColossalCaveWorld package if you want to.
+
+Testing
+To run the test world evaluate the following in a workspace:
+
+AdventureShell show
+
+To run the version of the Colossal Cave adventure included in the 
+ColossalCaveWorld package evaluate the following in a workspace:
+
+ColossalCaveShell show
+
+Porting
+Files for each of the classes in the framework are supplied in chunk format.  You may 
+need to edit these by hand to remove any lines that your version of Smalltalk won’t 
+accept, and then file them in.  The only non-standard Smalltalk feature used is the code 
+which saves and restores a World (see World>>save and World>>restore) which makes 
+use of the Dolphin STB (Smalltalk Binary Filing) classes.  Most Smalltalk 
+implementations provide some way of saving and restoring objects to/from flat files, and 
+you should use whatever method your Smalltalk implementation provides.  (The 
+objective here is to provide a player of a particular implementation a way to save and 
+restore his position in a World; there is no intent to create a cross-platform, cross-
+Smalltalk method of doing binary object filing).  As far as the user interface goes, the 
+original implementation is very simple – a text box is placed at the top of the window and 
+is used by the player to enter commands which are passed to the World 
+(World>>processCommand:).  Below the input text box is a multiline text box that is used 
+to display the Responses collected by the World.
+
+
+Colossal Cave
+The version of Colossal Cave supplied with this package is a partial implementation of 
+the original Colossal Cave adventure.  The wandering dwarves and the pirate were not 
+implemented because I always disliked the random factor they introduced into the game, 
+and in addition the end-game scenario wasn’t implemented.  I also eliminated the 
+requirement to kill the dragon, not from any desire to “sanitize” the game, but because at 
+that point I was tired of programming the blasted thing and wanted to get done with it.  A 
+new way of “removing” the dragon was introduced, which will give experienced Colossal 
+Cave players something new to figure out.  
+
+Contacting the Author
+
+If you need to contact the author you can try the following:
+
+1. Post a message on comp.lang.smalltalk or comp.lang.smalltalk.dolphin.  I usually monitor 
+these groups, and if I’m not around someone else may be able to help you.
+2. Post a message on the Squeak mailing list, if you’re a member.  If you’re not a member you 
+should be – send an email to squeak-request@cs.uiuc.edu with the word “Subscribe” in the 
+subject line to join.  (Squeak, if you’re not familiar with it, is a free version of Smalltalk 
+brought to you by some of the original Smalltalk developers from Xerox PARC.  Alan Kay, 
+Dan Ingalls, and several other very talented individuals make up Squeak Central at Disney, 
+and they are aided and abetted by the members of the Squeak mailing list).
+3. Send email to jarvisb@timken.com or jarvis@nls.net.  The first address will likely get you 
+faster turnaround.
+
+I’d be interested in hearing about what anyone is doing with SmallWorlds.  Good luck, and have 
+fun.
+
+
+Bob Jarvis
+March, 2001
+i
+
+i
+

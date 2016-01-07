@@ -1,0 +1,46 @@
+interface IDolphinEval;
+
+[
+	uuid(90AFBE4B-EE90-422D-8E5E-04ABE420FCF4), 
+	version(1.0), 
+	helpstring("Dolphin Evalutaion Control 1.0")
+]
+library DolphinEval
+{
+	importlib("stdole2.tlb");
+
+	[
+		object, 
+		uuid(BE10DD29-DFEC-472E-A8E6-83DE561E1B5D), 
+		helpstring("IDolphinEval Interface"), 
+		dual
+	]
+	interface IDolphinEval : IDispatch
+	 {
+		HRESULT __stdcall Browse( [in]BSTR SmalltalkExpression);
+		HRESULT __stdcall Evaluate( [in]BSTR SmalltalkExpression, [out, retval] BSTR *Result);
+		HRESULT __stdcall Debug( [in]BSTR SmalltalkExpression);
+		HRESULT __stdcall Reformat( [in]BSTR SmalltalkExpression, [out, retval] BSTR *Result);
+		HRESULT __stdcall Search( [in]BSTR SmalltalkExpression);
+		HRESULT __stdcall SearchMethodContaining( [in]BSTR SmalltalkExpression);
+		HRESULT __stdcall Definitions( [in]BSTR SmalltalkExpression);
+		HRESULT __stdcall References( [in]BSTR SmalltalkExpression);
+	};
+
+
+	[
+		uuid(D2A20729-3B7A-47BB-BF58-D98D5B524F36), 
+		helpstring("Dolphin Evalutaion Control 1.0")
+	]
+	coclass DolphinEvaluator {
+		[
+			default
+		]interface IDolphinEval;
+	};
+
+};
+
+
+
+
+
