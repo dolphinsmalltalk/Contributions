@@ -1,4 +1,4 @@
-# DolphinContributions
+# Contributions
 Third party contributions to Dolphin that are not part of the core image.
 
 * This repository should be cloned/downloaded directly under the Dolphin root directory (e.g, Dolphin/Contributions).
