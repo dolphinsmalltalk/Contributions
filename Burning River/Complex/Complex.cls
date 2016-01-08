@@ -1,90 +1,10 @@
-| package |
-package := Package name: 'Complex'.
-package paxVersion: 0;
-	basicComment: 'This package implements complex numbers.
-
-Copyright (c) 2002-2004 Robert Jarvis
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-'.
-
-
-package classNames
-	add: #Complex;
-	yourself.
-
-package methodNames
-	add: #ArithmeticValue -> #asComplex;
-	add: #Number -> #compareWithComplex:;
-	add: #Number -> #divideIntoComplex:;
-	add: #Number -> #multiplyComplex:;
-	add: #Point -> #asComplex;
-	yourself.
-
-package binaryGlobalNames: (Set new
-	yourself).
-
-package globalAliases: (Set new
-	yourself).
-
-package allResourceNames: (Set new
-	yourself).
-
-package setPrerequisites: (IdentitySet new
-	add: '..\..\Object Arts\Dolphin\Base\Dolphin';
-	yourself).
-
-package!
-
-"Class Definitions"!
+"Filed out from Dolphin Smalltalk 7"!
 
 ArithmeticValue subclass: #Complex
 	instanceVariableNames: 'real imag'
 	classVariableNames: ''
 	poolDictionaries: ''
 	classInstanceVariableNames: ''!
-
-"Global Aliases"!
-
-
-"Loose Methods"!
-
-!ArithmeticValue methodsFor!
-
-asComplex
-	^Complex real: self! !
-!ArithmeticValue categoriesFor: #asComplex!converting!public! !
-
-!Number methodsFor!
-
-compareWithComplex: aComplex
-	^(self = aComplex realPart) and: [ aComplex imaginaryPart = 0 ]!
-
-divideIntoComplex: aComplex
-	^aComplex / (Complex real: self)!
-
-multiplyComplex: aComplex
-	^aComplex * (Complex real: self)! !
-!Number categoriesFor: #compareWithComplex:!double dispatch!public! !
-!Number categoriesFor: #divideIntoComplex:!double dispatch!public! !
-!Number categoriesFor: #multiplyComplex:!double dispatch!private! !
-
-!Point methodsFor!
-
-asComplex
-	^Complex real: self x imaginary: self y! !
-!Point categoriesFor: #asComplex!converting!public! !
-
-"End of package definition"!
-
-"Source Globals"!
-
-"Classes"!
-
 Complex guid: (GUID fromString: '{2C1BFF60-9BA8-471F-857A-77B91B6FA516}')!
 Complex comment: ''!
 !Complex categoriesForClass!Unclassified! !
@@ -295,8 +215,4 @@ zero
 !Complex class categoriesFor: #real:!object creation!public! !
 !Complex class categoriesFor: #real:imaginary:!object creation!public! !
 !Complex class categoriesFor: #zero!object creation!public! !
-
-"Binary Globals"!
-
-"Resources"!
 
