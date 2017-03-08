@@ -1,1 +1,5 @@
 * text=auto
+
+*.cls linguist-language=Smalltalk
+*.st linguist-language=Smalltalk
+*.pax linguist-language=Smalltalk
