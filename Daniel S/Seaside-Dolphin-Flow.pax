@@ -1,0 +1,73 @@
+| package |
+package := Package name: 'Seaside-Dolphin-Flow'.
+package paxVersion: 1;
+	basicComment: 'Copyright (c) 2014 Daniel Slomovits. Portions copyright (c) 2014 Shoshana Technologies, Inc., released with permission.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'.
+
+
+package methodNames
+	add: #GRDolphinPlatform -> #seasideCallbackDelimiter;
+	add: #GRDolphinPlatform -> #seasideSuspendFlowDo:;
+	yourself.
+
+package binaryGlobalNames: (Set new
+	yourself).
+
+package globalAliases: (Set new
+	yourself).
+
+package setPrerequisites: (IdentitySet new
+	add: '..\..\Core\Object Arts\Dolphin\Base\Dolphin';
+	add: 'DS Partial Continuations';
+	add: '..\..\Seaside30\Grease\Grease-Dolphin-Core';
+	add: '..\..\Seaside30\Seaside\Seaside-Component';
+	add: '..\..\Seaside30\Seaside\Seaside-Core';
+	yourself).
+
+package!
+
+"Class Definitions"!
+
+
+"Global Aliases"!
+
+
+"Loose Methods"!
+
+!GRDolphinPlatform methodsFor!
+
+seasideCallbackDelimiter
+	| context |
+	context := Processor activeProcess topFrame sender.
+	
+	[context isNil
+		or: [(context receiver isKindOf: WACallback) or: [context method == (WATaskVisitor >> #visitTask:)]]]
+			whileFalse: [context := context sender].
+	context isNil
+		ifTrue: [self error: 'You can only #call: and #answer: from within a callback or a Task.'].
+	^context.!
+
+seasideSuspendFlowDo: aBlock
+	"Evaluate aBlock, passing in a continuation that can be evaluated to answer to the place where this very method was called. This method is presumed to be executed only within the scope of an executing Callback or Task and should, ideally, create a continuation that includes only the contexts that make up the Callback or Task execution (a partial or delimited continuation). Do not use this method, if you don't understand this comment."
+
+	"^Error notYetImplemented."
+
+	"^AnswerContinuation currentDo: aBlock."
+
+	| continuation |
+	continuation := PartialContinuation from: Processor activeProcess topFrame sender
+				to: self seasideCallbackDelimiter.
+	^aBlock value: 
+			[:answer |
+			[continuation value: answer] on: ContinuationDelimiterRequest
+				do: [:request | request resume: self seasideCallbackDelimiter]].! !
+!GRDolphinPlatform categoriesFor: #seasideCallbackDelimiter!public! !
+!GRDolphinPlatform categoriesFor: #seasideSuspendFlowDo:!public! !
+
+"End of package definition"!
+

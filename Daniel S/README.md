@@ -1,0 +1,3 @@
+# Contributions
+- DS Partial Continuations: A Seaside-compatible implementation of Partial Continuations for Dolphin.
+- Seaside-Dolphin-Flow: The couple glue methods that actually make Seaside use the above. Note, you will get a "Package contents clash" error when loading this with Seaside installed, as the existing Grease-Dolphin-Core currently includes an "Error notYetImplemented" stub for one of these methods.

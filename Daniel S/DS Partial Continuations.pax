@@ -1,0 +1,190 @@
+| package |
+package := Package name: 'DS Partial Continuations'.
+package paxVersion: 1;
+	basicComment: 'Partial Continuations support for Dolphin Smalltalk
+Copyright (c) 2014 Daniel Slomovits. Portions copyright (c) 2014 Shoshana Technologies, Inc., released with permission.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'.
+
+package basicPackageVersion: '0.006'.
+
+
+package classNames
+	add: #AbstractPartialProcessCopier;
+	add: #ContinuationDelimiterRequest;
+	add: #ExceptionHandlerChainCookie;
+	add: #PartialContinuation;
+	add: #PartialContinuationTest;
+	add: #PartialProcessCopier;
+	add: #ProcessPatcher;
+	yourself.
+
+package methodNames
+	add: #BlockClosure -> #ifCurtailed:thenSignal:;
+	add: #Exception -> #acceptProcessCopier:;
+	add: #Exception -> #copyForProcessCopier;
+	add: #Exception -> #deepenProcessCopy:;
+	add: #ExceptionHandlerAbstract -> #setOuter:;
+	add: #Object -> #callcc:;
+	add: #Object -> #copyForProcessCopier;
+	add: #Object -> #mark:;
+	add: #Process -> #copyFrom:to:;
+	add: #Process -> #fixSuspendedFrame;
+	add: #StackFrame -> #receiver:;
+	yourself.
+
+package binaryGlobalNames: (Set new
+	yourself).
+
+package globalAliases: (Set new
+	yourself).
+
+package setPrerequisites: (IdentitySet new
+	add: '..\..\Core\Object Arts\Dolphin\Base\Dolphin';
+	add: '..\..\Core\Object Arts\Dolphin\System\Continuations\Dolphin Continuations';
+	add: '..\..\Core\Contributions\Camp Smalltalk\SUnit\SUnit';
+	yourself).
+
+package!
+
+"Class Definitions"!
+
+Object subclass: #ExceptionHandlerChainCookie
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+Object subclass: #PartialContinuation
+	instanceVariableNames: 'partialProcess'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+Notification subclass: #ContinuationDelimiterRequest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+ProcessCopier subclass: #AbstractPartialProcessCopier
+	instanceVariableNames: 'baseFrame seamIndex indexMap'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+AbstractPartialProcessCopier subclass: #PartialProcessCopier
+	instanceVariableNames: 'topFrame'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+AbstractPartialProcessCopier subclass: #ProcessPatcher
+	instanceVariableNames: 'patchFrames'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+TestCase subclass: #PartialContinuationTest
+	instanceVariableNames: 'crossKK counter'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+
+"Global Aliases"!
+
+
+"Loose Methods"!
+
+!BlockClosure methodsFor!
+
+ifCurtailed: terminationBlock thenSignal: aSemaphore 
+	"Never called directly. Appears out of nowhere via direct stack manipulation inside ProcessPatcher>>#unwindExistingStack.
+	aSemaphore is used to return control to the ProcessPatcher before this frame is fully unwound. If terminationBlock contains a non-local return
+	(literally never happens in base code, unless there's an exception throw somewhere), the ProcessPatcher will recognize this and return control to us"
+
+	^self valueOnUnwind: [:retValue :retFrame | terminationBlock ensure: [aSemaphore signal]].! !
+!BlockClosure categoriesFor: #ifCurtailed:thenSignal:!not restartable!public!unwinding! !
+
+!Exception methodsFor!
+
+acceptProcessCopier: aProcessCopier 
+	"Needed if and only if you want to be able to take a continuation inside an exception *handler* block and have it restore properly. Capture and restore inside guarded blocks works fine.
+	i.e. self mark: [
+		[self someOperation.
+		self callcc: [:cc | kk := cc. 'This is okay'].
+		self someOtherOperation] on: Warning
+				do: [:ex | (self callcc: 
+							[:cc | 
+							errKK := cc. 'This would not be'.
+							false]) ifTrue: [ex resume]]]"
+
+	^aProcessCopier copyObject: self!
+
+copyForProcessCopier
+	"See #acceptProcessCopier: -- we need to not nil our instance variables for state-saving to work correctly..."
+
+	^self shallowCopy!
+
+deepenProcessCopy: aProcessCopier
+	"See #acceptProcessCopier:.
+	Easiest to just blindly 'copy' all our instance variables, some of which are primitive types that won't be copied.
+	_signalFrame is really a pointer and needs to be 'copied' too."
+
+	1 to: self class instSize
+		do: [:i | (self instVarAt: i) ifNotNil: [:a | self instVarAt: i put: (aProcessCopier visit: a)]].
+	(_signalFrame isNil or: [_signalFrame isZero])
+		ifFalse: [_signalFrame := _signalFrame + aProcessCopier delta].! !
+!Exception categoriesFor: #acceptProcessCopier:!public! !
+!Exception categoriesFor: #copyForProcessCopier!public! !
+!Exception categoriesFor: #deepenProcessCopy:!public! !
+
+!ExceptionHandlerAbstract methodsFor!
+
+setOuter: anExceptionHandler 
+	outer := anExceptionHandler! !
+!ExceptionHandlerAbstract categoriesFor: #setOuter:!public! !
+
+!Object methodsFor!
+
+callcc: aBlock 
+	^PartialContinuation currentDo: aBlock!
+
+copyForProcessCopier
+	^self copy!
+
+mark: aBlock
+	| homeFrame |
+	homeFrame := Processor activeProcess topFrame.
+	^aBlock on: ContinuationDelimiterRequest do: [:ex | ex resume: homeFrame].! !
+!Object categoriesFor: #callcc:!public! !
+!Object categoriesFor: #copyForProcessCopier!public! !
+!Object categoriesFor: #mark:!public! !
+
+!Process methodsFor!
+
+copyFrom: topFrame to: bottomFrame
+	| answer |
+	answer := PartialProcessCopier copyStackFrom: topFrame to: bottomFrame.
+	self isActive ifTrue: [answer fixSuspendedFrame].
+	^answer.!
+
+fixSuspendedFrame
+	| suspended sp |
+	suspended := self suspendedFrame.
+	sp := suspended sp + 1.
+	self
+		resize: sp;
+		at: sp put: self.
+	suspended sp: sp.! !
+!Process categoriesFor: #copyFrom:to:!public! !
+!Process categoriesFor: #fixSuspendedFrame!copying!public! !
+
+!StackFrame methodsFor!
+
+receiver: anObject 
+	"Change the `self` of the context -- DANGER"
+
+	^process at: self bp - 1 put: anObject! !
+!StackFrame categoriesFor: #receiver:!accessing!private! !
+
+"End of package definition"!
+
