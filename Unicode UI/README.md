@@ -11,8 +11,10 @@ See example UI by evaluating:
 	TestUnicodeShell show.
 
 ## How it Works
-This is done in a two stages:
-1. The package loads code as normal.
+### Initial Creation of Unicode API Libraries
+* The Unicode API library classes were created and the code in "CreateUnicodeLibraryMethods.st" was run to create all of the "...W" API function calls and redirectors.  **This has already been done and need not be rerun** unless regeneration is desired.
+### Loading the Pacakage
+1. The package loads code as normal, and includes the Unicode library classes (described above).
 2. After a prompt, automated transforms are applied to the code base.  This approach was taken to facilitate the ease of applying Unicode UI support to a independently evolving Dolphin core.  The results of these transforms are not captured into new packages. See the package scripts for more information.
 
 ## Areas in Need of Improvement:
