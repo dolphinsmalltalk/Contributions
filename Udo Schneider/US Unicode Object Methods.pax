@@ -1,0 +1,48 @@
+| package |
+package := Package name: 'US Unicode Object Methods'.
+package paxVersion: 1;
+	basicComment: 'Object Loose Methods have been moved into this package so that  the "US Unicode" package can be loaded into an image without errors.'.
+
+
+package methodNames
+	add: #Object -> #equalsCharacter:;
+	add: #Object -> #equalsString:;
+	add: #Object -> #equalsUnicodeString:;
+	yourself.
+
+package binaryGlobalNames: (Set new
+	yourself).
+
+package globalAliases: (Set new
+	yourself).
+
+package setPrerequisites: (IdentitySet new
+	add: '..\..\Core\Object Arts\Dolphin\Base\Dolphin';
+	yourself).
+
+package!
+
+"Class Definitions"!
+
+
+"Global Aliases"!
+
+
+"Loose Methods"!
+
+!Object methodsFor!
+
+equalsCharacter: comparand 
+	^false!
+
+equalsString: comparand 
+	^false!
+
+equalsUnicodeString: comparand 
+	^false! !
+!Object categoriesFor: #equalsCharacter:!comparing!public! !
+!Object categoriesFor: #equalsString:!comparing!public! !
+!Object categoriesFor: #equalsUnicodeString:!comparing!public! !
+
+"End of package definition"!
+
