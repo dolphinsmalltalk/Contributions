@@ -7,6 +7,9 @@ This may not be a complete or optimally efficient implementation.  This started 
 ## Example Shell:
 ![Example Shell](http://www.mitchellscientific.com/smalltalk/osds/unicode-ui/exp2/Exp2ScrnCap.png)
 
+See example UI by evaluating:
+	TestUnicodeShell show.
+
 ## How it Works
 This is done in a two stages:
 1. The package loads code as normal.
