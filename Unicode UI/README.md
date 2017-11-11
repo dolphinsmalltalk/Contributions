@@ -2,7 +2,7 @@
 
 This package adds experimental Unicode support to the Dolphin Smalltalk UI.
 
-This may not be a complete or optimally efficient implementation.  This started as an experimental prototype to explore the concept of adding Unicode UI support to Dolphin Smalltalk.
+This may not be a complete or optimally efficient implementation.  This started as an experimental prototype to explore the concept of adding Unicode UI support to Dolphin Smalltalk. **This package makes system changes and should only be loaded in an experimental image.**
 
 ## Example Shell:
 ![Example Shell](http://www.mitchellscientific.com/smalltalk/osds/unicode-ui/exp2/Exp2ScrnCap.png)
