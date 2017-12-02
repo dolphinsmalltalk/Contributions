@@ -1,0 +1,1283 @@
+| package |
+package := Package name: 'MitSciUnicodeUI'.
+package paxVersion: 1;
+	basicComment: 'This package adds experimental Unicode support to the Dolphin UI.
+
+This is done in a two stages:
+1. The package loads code as normal.
+2. After a prompt, automated transforms are applied to the code base.  This approach was taken to facilitate the ease of applying Unicode UI support to a independently evolving Dolphin core.  The results of these transforms are not captured into new packages. See the package scripts for more information.
+
+This may not be a complete or optimally efficient implementation.  This started as an experimental prototype to explore the concept of adding Unicode UI support to Dolphin Smalltalk.
+
+Areas in Need of Improvement:
+1. Expand coverage of Unicode support as needed.  Presently most of the UI, and ODBC Databases have decent Unicode support.
+2. Some of the transforms are simple text replacements.  It may be desirable to have more sophisticated parse tree aware transforms.
+3. I haven''t used this, "for real", if someone does then further areas in need of improvement will come up. 
+
+See example UI by evaluating:
+	TestUnicodeShell show.
+
+Initially developed by Mitchell Scientific, Inc. in 2016 .
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of th??Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'.
+
+package basicPackageVersion: '0.005'.
+
+package basicScriptAt: #postinstall put: 'UserLibraryW openDefault.
+GDILibraryW openDefault.
+
+[(MessageBox confirm: ''Allowing this section of the post install script will transform system methods to add Unicode support.  This package should ONLY be loaded into a test image.  Allow system changes?'' caption: ''Allow System Hooks?'') 
+	ifTrue: [| uct |
+		uct := MitSciUnicodeTransformer new.
+		uct applyAutomatedCodeTransformations
+]] postToInputQueue.'.
+package basicScriptAt: #preinstall put: '"Add a class variable a Unicode view atom."
+(View classVarNames includes: ''WndClassAtomW'') ifFalse: [View addClassVarName: ''WndClassAtomW''].
+(View classVarNames includes: ''UnicodeMask'') ifFalse: [View addClassVarName: ''UnicodeMask''.
+	View classPool at: ''UnicodeMask'' put: 1024 ].
+(DBColAttr instVarNames includes: ''isUnicode'') ifFalse: [DBColAttr addInstVarName: ''isUnicode''].
+'.
+
+package classNames
+	add: #FlipperInspectorW;
+	add: #GDILibraryW;
+	add: #MitSciUnicodeAPIScanner;
+	add: #MitSciUnicodeTransformer;
+	add: #ODBCLibraryW;
+	add: #TestNonUnicodeShell;
+	add: #TestUnicodeShell;
+	add: #UserLibraryW;
+	add: #WNDCLASSW;
+	yourself.
+
+package methodNames
+	add: #ByteArray -> #asUnicodeString;
+	add: #Canvas -> #gdiLibrary;
+	add: #Canvas -> #gdiLibraryForString:;
+	add: #Canvas -> #userLibrary;
+	add: #Canvas -> #userLibraryForString:;
+	add: #CCITEM -> #textInBuffer:;
+	add: #Clipboard -> #getText;
+	add: #Clipboard -> #getUnicodeTextifNone:;
+	add: #ContainerView -> #isUnicodeView:;
+	add: #CRTLibrary -> #wcsncpy:strSource:count:;
+	add: #DBAbstractStatement -> #describeCols:;
+	add: #DBAbstractStatement -> #isUnicode;
+	add: #DBAbstractStatement -> #odbcLibrary;
+	add: #DBAbstractStatement -> #odbcLibraryForString:;
+	add: #DBAbstractStatement -> #stringClass;
+	add: #DBBoundBuffer -> #bind:;
+	add: #DBColAttr -> #cType;
+	add: #DBColAttr -> #isCharType;
+	add: #DBColAttr -> #isUnicode;
+	add: #DBColAttr -> #isUnicode:;
+	add: #DBColAttr -> #lengthC;
+	add: #DBColumnsStatement -> #executeStatement;
+	add: #DBConnection -> #columns:qualifier:owner:table:;
+	add: #DBConnection -> #isUnicode;
+	add: #DBConnection -> #isUnicode:;
+	add: #DBConnection -> #odbcLibrary;
+	add: #DBConnection -> #open;
+	add: #DBConnection -> #stringClass;
+	add: #DBField -> #asString;
+	add: #DBField -> #fromString:;
+	add: #DBField -> #getData:;
+	add: #DBParameterizedStatement -> #prepare;
+	add: #DBParameterizedStatement -> #setParams;
+	add: #DBResultSet -> #fetchScroll:offset:;
+	add: #DBResultSet -> #odbcLibrary;
+	add: #DBResultSet -> #odbcLibraryForString:;
+	add: #DBStatement -> #executeStatement;
+	add: #DBTablesStatement -> #executeStatement;
+	add: #GraphicsTool -> #userLibrary;
+	add: #GraphicsTool -> #userLibraryForString:;
+	add: #InputState -> #lastWindow;
+	add: #KernelLibrary -> #lstrcmpiW:lpString2:;
+	add: #KernelLibrary -> #lstrcmpW:lpString2:;
+	add: #ListView -> #lvmGetItem:;
+	add: #ListView -> #lvmGetStringWidth:;
+	add: #ListView -> #lvmSetColumn:at:;
+	add: #ListView -> #lvmSetItem:;
+	add: #ListView -> #onDisplayDetailsRequired:;
+	add: #Menu -> #userLibrary;
+	add: #MenuItem -> #userLibrary;
+	add: #MessageBox -> #userLibrary;
+	add: #SymbolStringSearchPolicy -> #compare:with:;
+	add: #SymbolStringSearchPolicy -> #hash:;
+	add: #TabView -> #getItem:;
+	add: #TabView -> #tcmInsertItem:atOffset:;
+	add: #TabView -> #updateItem:atIndex:;
+	add: #UnicodeCharacter -> #isSeparator;
+	add: #UnicodeString -> #_collate:;
+	add: #UnicodeString -> #displayString;
+	add: #UnicodeString -> #includes:;
+	add: #UnicodeString -> #inspectorClass;
+	add: #UnicodeString -> #show;
+	add: #UnicodeString -> #trueCompare:;
+	add: #UserLibrary -> #isWindowUnicode:;
+	add: #View -> #basicCreateAt:extent:;
+	add: #View -> #isUnicodeView;
+	add: #View -> #isUnicodeView:;
+	add: #View -> #parentView:;
+	add: #View -> #stringClass;
+	add: #View -> #userLibrary;
+	add: #View -> #userLibraryForString:;
+	add: 'ListView class' -> #initializeNotificationMap;
+	add: 'Presenter class' -> #isUnicodeMode;
+	add: 'Presenter class' -> #loadViewResource:inContext:;
+	add: 'Prompter class' -> #isUnicodeMode;
+	add: 'UnicodeString class' -> #newTest;
+	add: 'View class' -> #onStartup;
+	add: 'View class' -> #registerClassW;
+	add: 'View class' -> #reregisterClassW;
+	add: 'View class' -> #unregisterClassW;
+	add: 'View class' -> #winClassNameW;
+	add: 'View class' -> #wndClassNameW;
+	yourself.
+
+package binaryGlobalNames: (Set new
+	yourself).
+
+package globalAliases: (Set new
+	yourself).
+
+package setPrerequisites: (IdentitySet new
+	add: '..\..\Core\Object Arts\Dolphin\Database\Database Connection Base';
+	add: '..\..\Core\Object Arts\Dolphin\IDE\Base\Development System';
+	add: '..\..\Core\Object Arts\Dolphin\Base\Dolphin';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Views\Common Controls\Dolphin Common Controls';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Models\List\Dolphin List Models';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Presenters\List\Dolphin List Presenter';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Base\Dolphin MVP Base';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Presenters\Prompters\Dolphin Prompter';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Presenters\Text\Dolphin Text Presenter';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Type Converters\Dolphin Type Converters';
+	add: '..\..\Core\Object Arts\Dolphin\MVP\Models\Value\Dolphin Value Models';
+	add: '..\..\Core\Contributions\Refactory\Refactoring Browser\Environments\RBEnvironments';
+	add: '..\..\Core\Object Arts\Dolphin\System\Compiler\Smalltalk Parser';
+	add: '..\Udo Schneider\Unicode\US Unicode';
+	yourself).
+
+package!
+
+"Class Definitions"!
+
+Object subclass: #MitSciUnicodeAPIScanner
+	instanceVariableNames: 'ansiAPIFunctionMethods'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+ODBCLibrary subclass: #ODBCLibraryW
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+GDILibrary subclass: #GDILibraryW
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+UserLibrary subclass: #UserLibraryW
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+WNDCLASS subclass: #WNDCLASSW
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+MitSciUnicodeAPIScanner subclass: #MitSciUnicodeTransformer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+Shell subclass: #TestUnicodeShell
+	instanceVariableNames: 'listPresenter textPresenter'
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+FlipperInspector subclass: #FlipperInspectorW
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+TestUnicodeShell subclass: #TestNonUnicodeShell
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	classInstanceVariableNames: ''!
+
+"Global Aliases"!
+
+
+"Loose Methods"!
+
+!ByteArray methodsFor!
+
+asUnicodeString
+	"Answer a UnicodeString containing the same elements as the receiver."
+	"cdemers 12/7/2016 Added for Unicode support."
+
+	^UnicodeString fromAddress: self yourAddress length: self size / 2! !
+!ByteArray categoriesFor: #asUnicodeString!converting!public! !
+
+!Canvas methodsFor!
+
+gdiLibrary
+
+	"cdemers 12/6/2016  I don't presently have a good way to default this.  Going to try to override based on string type arguments wherever I can."
+	^GDILibrary default
+!
+
+gdiLibraryForString: aStringOrUnicodeString 
+
+	"cdemers 12/6/2016"
+	^((aStringOrUnicodeString class == UnicodeString ) ifTrue: [GDILibraryW] ifFalse: [GDILibrary]) default
+!
+
+userLibrary
+
+	"Private - cdemers 10/26/2016"
+	"^((UserLibraryW default isWindowUnicode: self handle) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default"
+	"This is an inelegant way to do this.  In most cases the active window can determin the Unicode sstatus. "
+	^((UserLibraryW default isWindowUnicode:  SessionManager current inputState lastWindow asParameter) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default!
+
+userLibraryForString: aStringOrUnicodeString
+
+	"Private - cdemers 10/28/2016"
+	^((aStringOrUnicodeString class == UnicodeString ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default! !
+!Canvas categoriesFor: #gdiLibrary!public! !
+!Canvas categoriesFor: #gdiLibraryForString:!public! !
+!Canvas categoriesFor: #userLibrary!private! !
+!Canvas categoriesFor: #userLibraryForString:!private! !
+
+!CCITEM methodsFor!
+
+textInBuffer: aString
+	"Writes aString into a system buffer pointed to by pszText
+	and of size cchTextMax.
+
+	cdeemrs 11/1/2016 Revised for Unicode support."
+
+	aString class == UnicodeString 
+		ifTrue: [CRTLibrary default 
+			wcsncpy: self pszTextAddress	"Raw address of text buffer allocated by control"
+			strSource: aString 
+			count: self cchTextMax] 
+		ifFalse: [CRTLibrary default 
+			strncpy: self pszTextAddress	"Raw address of text buffer allocated by control"
+			strSource: aString 
+			count: self cchTextMax]! !
+!CCITEM categoriesFor: #textInBuffer:!accessing!public! !
+
+!Clipboard methodsFor!
+
+getText
+        "Answer a <readableString> containing the the CF_TEXT contents 
+	of the clipboard. If no text is currently available, raise an exception."
+	"cdemers 12/6/2016 Revised to return a Unicode string if available, otherwise see if there is an ANSI string."
+
+	^(self isFormatIdAvailable: CF_UNICODETEXT) 
+		ifTrue: [self getUnicodeTextifNone: [self errorFormatNotAvailable: #String] ]
+		ifFalse: [self getTextIfNone: [self errorFormatNotAvailable: #String]]!
+
+getUnicodeTextifNone: exceptionHandler 
+	"cdemers 10/12/2016 Expiriment to see if we can get unicode text."
+	"Private - Answer a <readableString> containing the text contents
+	of the clipboard of the specified format. If the format is not currently 
+	available, the answers the result of evaluating the <niladicValuable> 
+	exceptionHandler.
+	N.B. It is not checked that formatId is actually a text format."
+
+	^self apply: 
+			[| hText pText text |
+			hText := UserLibrary default getClipboardData: CF_UNICODETEXT.
+			hText isNull ifTrue: [^exceptionHandler value].
+			pText := KernelLibrary default globalLock: hText.
+			text := UnicodeString fromAddress: pText.
+			KernelLibrary default globalUnlock: hText.
+			text]! !
+!Clipboard categoriesFor: #getText!accessing!public! !
+!Clipboard categoriesFor: #getUnicodeTextifNone:!private! !
+
+!ContainerView methodsFor!
+
+isUnicodeView: aBoolean
+
+	"cdemers 10/20/2016 Set the Unicode state deeply. This will not recreate windows, so to have a proper Unicode view it will need to be set before the view is opened."
+	super isUnicodeView: aBoolean.
+	self subViewsDo: [:eachSv | 
+		eachSv isUnicodeView: aBoolean].! !
+!ContainerView categoriesFor: #isUnicodeView:!public! !
+
+!CRTLibrary methodsFor!
+
+wcsncpy: strDest strSource: strSource count: count
+	"Copy up to count characters of the <String> strSource to the <String> strDest 
+	and answer strDest. A null appended if there is sufficient space in the destination 
+	buffer. The source and destination must not overlap.
+
+		char *strncpy( char *strDest, const char *strSource, size_t count );
+
+	cdemers 11/1/2016 Added for Unicode support.
+	"
+
+	<cdecl: lpvoid wcsncpy lpvoid lpvoid intptr>
+	^self invalidCall
+! !
+!CRTLibrary categoriesFor: #wcsncpy:strSource:count:!CRT functions-string manipulation!public! !
+
+!DBAbstractStatement methodsFor!
+
+describeCols: columnNumbers 
+	"Answer an array of <DBColAttr>s describing the each of the columns
+	of the receiver with indices in the <sequencedReadableCollection> argument."
+
+	| answer i name columnSize colNameLen dataType decimalDigits nullable nameBufSize hStmt colLen lib |
+	nameBufSize := self parent maxColumnNameLength+ 1.
+	name := self stringClass newFixed: nameBufSize.
+	colNameLen := SWORD new.
+	dataType := SWORD new.
+	columnSize := DWORD new.
+	decimalDigits := SWORD new.
+	nullable := SWORD new.
+	colLen := DWORD new.
+	hStmt := self executedHandle.
+	lib := self odbcLibrary.
+	answer := Array new: columnNumbers size.
+	i := 1.
+	columnNumbers do: 
+			[:each | 
+			| ret |
+			ret := lib 
+						sqlDescribeCol: hStmt
+						columnNumber: each
+						columnName: name
+						bufferLength: nameBufSize
+						nameLengthPtr: colNameLen
+						dataTypePtr: dataType
+						columnSizePtr: columnSize
+						decimalDigitsPtr: decimalDigits
+						nullablePtr: nullable.
+			self dbCheckException: ret.
+			ret := lib 
+						sqlColAttribute: hStmt
+						columnNumber: each
+						fieldIdentifier: SQL_COLUMN_LENGTH
+						characterAttributePtr: nil
+						bufferLength: nil
+						stringLengthPtr: nil
+						numericAttributePtr: colLen.	"Note using ODBC 2.x definition of column length"
+			self dbCheckException: ret.
+			answer at: i
+				put: ((DBColAttr new)
+						columnNumber: each;
+						name: (name leftString: colNameLen value);
+						type: dataType value;
+						length: colLen value;
+						precision: columnSize value;
+						scale: decimalDigits value;
+						isUnicode: self parent isUnicode).
+			i := i + 1].
+	^answer!
+
+isUnicode
+
+	^self parent isUnicode!
+
+odbcLibrary
+
+	^(self isUnicode ifTrue: [ODBCLibraryW] ifFalse: [ODBCLibrary]) default !
+
+odbcLibraryForString: aStringOrUnicodeString
+
+	"cdemers 11/15/2016"
+	^((aStringOrUnicodeString class == UnicodeString ) ifTrue: [ODBCLibraryW] ifFalse: [ODBCLibrary]) default
+	!
+
+stringClass
+
+	"cdemers 11/15/2016 "
+	^self isUnicode ifTrue: [UnicodeString] ifFalse: [String]! !
+!DBAbstractStatement categoriesFor: #describeCols:!accessing!public! !
+!DBAbstractStatement categoriesFor: #isUnicode!public! !
+!DBAbstractStatement categoriesFor: #odbcLibrary!public! !
+!DBAbstractStatement categoriesFor: #odbcLibraryForString:!public! !
+!DBAbstractStatement categoriesFor: #stringClass!public! !
+
+!DBBoundBuffer methodsFor!
+
+bind: aDBStatement
+	"Private - Bind the receiver's field buffers to columns in the result table."
+
+	| hStmt |
+	hStmt := super bind: aDBStatement.
+	self contents with: columns
+		do: 
+			[:eachField :eachColumn | 
+			aDBStatement dbCheckException: (aDBStatement odbcLibrary 
+						sqlBindCol: hStmt
+						columnNumber: eachColumn columnNumber
+						targetType: eachColumn cType
+						targetValuePtr: eachField fieldBuf
+						bufferLength: (##(2 raisedTo: 16) min: eachField fieldSize)
+						strLenOrInd: eachField lengthBuf)].
+	^hStmt! !
+!DBBoundBuffer categoriesFor: #bind:!operations!private! !
+
+!DBColAttr methodsFor!
+
+cType
+	"Private - Answer the 'C' type to which the described column's values should be converted when loaded
+	into Dolphin buffers (DBFields)."
+
+	"cdemers 11/15/2016 Add Unicode support."
+	| type |
+
+	type := SQLToCTypes at: sqlType+TypeOffset.
+	^(type = SQL_C_CHAR and:[ self isUnicode]) 
+		ifTrue: ["SQL_C_WCHAR May be wrong, seems to be defined as -9, I think it should be -8" -8 ]
+		ifFalse: [type]
+	!
+
+isCharType
+	"Private - Answers true if the receiver represents a character based column"
+
+	"cdemers 2016/11/22 Added support for SQL_C_WCHAR for Unicode."
+
+	^self cType == SQL_C_CHAR or: [self cType ==  -8 ]!
+
+isUnicode
+	"cdemers 11/15/2016"
+	^isUnicode ifNil: [false]!
+
+isUnicode: aBoolean
+	"cdemers 11/15/2016"
+	isUnicode := aBoolean!
+
+lengthC
+	"Private - Answer the length of a field sufficient to hold column
+	 entries when SQL_C_DEFAULT conversion is used (basically need
+	 an extra byte for null terminator for string types)"
+
+	"cdemers 2016/11/22 We need a larger buffer for Unicode Strings."
+	^self isCharType ifTrue: [self isUnicode ifTrue: [(length+1) * 2] ifFalse: [length+1]] ifFalse: [length]! !
+!DBColAttr categoriesFor: #cType!accessing!private! !
+!DBColAttr categoriesFor: #isCharType!private!testing! !
+!DBColAttr categoriesFor: #isUnicode!public!testing! !
+!DBColAttr categoriesFor: #isUnicode:!accessing!private! !
+!DBColAttr categoriesFor: #lengthC!accessing!private! !
+
+!DBColumnsStatement methodsFor!
+
+executeStatement
+	"Private - Execute the database command that the receiver represents.
+	Answer the <integer> return code."
+	
+	^(self odbcLibraryForString:  self tableName)
+		sqlColumns: self allocatedHandle
+		catalogName: self catalogName
+		nameLength1: SQL_NTS
+		schemaName: self schemaName
+		nameLength2: SQL_NTS
+		tableName: self tableName
+		nameLength3: SQL_NTS
+		columnName: self columnName
+		nameLength4: SQL_NTS! !
+!DBColumnsStatement categoriesFor: #executeStatement!operations!private! !
+
+!DBConnection methodsFor!
+
+columns: aStringColumn qualifier: aStringQualifier owner: aStringOwner table: aStringTable 
+	"Answer the list of columns in the table matching the specified search criteria"
+
+	| i stmt colAttrs |
+	stmt := DBColumnsStatement parent: self.
+	stmt
+		catalogName: aStringQualifier;
+		schemaName: aStringOwner;
+		tableName: aStringTable;
+		columnName: aStringColumn.
+	i := 0.
+	colAttrs := stmt results collect: 
+					[:each | 
+					i := i + 1.
+					"at: 'column_name'"	"at: 'DATA_TYPE'"	"at: 'LENGTH'"	"at: 'PRECISION'"	"at: 'SCALE'"
+					(DBColAttr new)
+						columnNumber: i;
+						name: (each atIndex: 4);
+						type: (each atIndex: 5);
+						length: (each atIndex: 8);
+						precision: (each atIndex: 7);
+						scale: (each atIndex: 9);
+						isUnicode: self isUnicode
+						yourself].
+	stmt free.
+	^colAttrs!
+
+isUnicode
+	^flags allMask: 2 "UnicodeMask"!
+
+isUnicode: aBoolean
+	"Enable/disable the user of the Unicode option when opening this connection."
+
+	flags := flags mask: 2 "UnicodeMask" set: aBoolean!
+
+odbcLibrary
+
+	^(self isUnicode ifTrue: [ODBCLibraryW] ifFalse: [ODBCLibrary]) default !
+
+open
+	"Open the receiver after prompting for the connection details, but only
+	if not already connected."
+
+	| connSz lenConnSz |
+	handle isNull ifFalse: [^self].
+	
+	[| ret |
+	"#1306: From MSDN, 'Applications should allocate at least 1,024 bytes for [the connection string] buffer'"
+	connSz := self stringClass newFixed: 2048.
+	lenConnSz := SWORD new.
+	ret := self odbcLibrary 
+				sqlDriverConnect: self getHandle
+				windowHandle: UserLibrary default getActiveWindow
+				inConnectionString: self connectString
+				stringLength1: SQL_NTS
+				outConnectionString: connSz
+				bufferLength: connSz size
+				stringLength2Ptr: lenConnSz
+				driverCompletion: (self useDriverCompletion 
+						ifTrue: [SQL_DRIVER_COMPLETE]
+						ifFalse: [SQL_DRIVER_NOPROMPT]).
+	self dbCheckException: ret] 
+			ifCurtailed: [self free].
+	self connectString: (connSz copyFrom: 1 to: (lenConnSz value min: connSz size))!
+
+stringClass
+
+	"cdemers 11/15/2016 "
+	^self isUnicode ifTrue: [UnicodeString] ifFalse: [String]! !
+!DBConnection categoriesFor: #columns:qualifier:owner:table:!enquiries!public! !
+!DBConnection categoriesFor: #isUnicode!accessing!public! !
+!DBConnection categoriesFor: #isUnicode:!accessing!public! !
+!DBConnection categoriesFor: #odbcLibrary!public! !
+!DBConnection categoriesFor: #open!operations!public! !
+!DBConnection categoriesFor: #stringClass!public! !
+
+!DBField methodsFor!
+
+asString
+	"Private - Answer the receiver's buffer as a <String>."
+	"cdemers 11/15/2016 Revised for Unicode support."
+	"self halt."
+	^self column isUnicode 
+		ifTrue: ["(buffer copy: UnicodeString from: 1 to: self length)"
+			buffer replaceBytesOf: (UnicodeString new: self length/2)
+				from: 1
+				to: self length
+				startingAt: 1]
+		ifFalse: [buffer copyStringFrom: 1 to: self length]
+!
+
+fromString: aString
+	"Private - Set the receiver's buffer from aString."
+	"cdemers 2016/12/1 Modified to support UnicodeStrings"
+
+	| stringToSave|
+
+	stringToSave := self column isUnicode ifTrue: [aString asUnicodeString ] ifFalse: [aString ].
+	(self shouldTranslate: stringToSave  class: String) ifTrue: [ 	| byteCount |
+		byteCount := (stringToSave  basicSize). 
+		byteCount > buffer size
+			ifTrue: [^self error: 'String too long. Max ', buffer size displayString, ' got ', byteCount displayString].
+		self column isUnicode 
+			ifTrue: [buffer replaceFrom: 1 to: byteCount with: stringToSave asByteArray.]
+			ifFalse: [buffer replaceFrom: 1 to: byteCount with: stringToSave].
+		
+		self length: byteCount]!
+
+getData: aDBStatement 
+	"Private - Retrieve the receiver's associated column data from the ODBC result set
+	following a fetch (into the receiver's buffer)."
+
+	| ret |
+	ret := aDBStatement odbcLibrary 
+				sqlGetData: aDBStatement executedHandle
+				columnNumber: column columnNumber
+				targetType: SQL_C_DEFAULT
+				targetValuePtr: buffer
+				bufferLength: buffer size
+				strLenOrIndPtr: lengthBuf.
+	aDBStatement dbCheckException: ret! !
+!DBField categoriesFor: #asString!converting!private! !
+!DBField categoriesFor: #fromString:!converting!private! !
+!DBField categoriesFor: #getData:!accessing!private! !
+
+!DBParameterizedStatement methodsFor!
+
+prepare
+	"Private - Prepare the receiver for later execution when the parameter values have 
+	been set. N.B. This should only be sent once unless closed in the interm."
+
+	| ret |
+	isPrepared := false.
+	parameters := nil.
+	ret := ( self odbcLibrary "self odbcLibraryForString: self sqlString" )
+				sqlPrepare: self allocatedHandle
+				statementText: (self isUnicode ifTrue: [self sqlString asUnicodeString ] ifFalse: [self sqlString])
+				textLength: SQL_NTS.
+	self dbCheckException: ret.
+	isPrepared := true!
+
+setParams
+	"Private - Bind parameter columns for a prepared SQL statement so that when we 
+	subsequently fill the buffer fields the statement is ready to exec. Normally only done 
+	just before first exec (from #parameters)."
+
+	paramCols keysAndValuesDo: 
+			[:i :eachCol | 
+			| buf eachField |
+			eachField := parameters at: i.
+			buf := eachField fieldBuf.
+			
+			self dbCheckException: (self odbcLibrary 
+						sqlBindParameter: self allocatedHandle
+						parameterNumber: i
+						inputOutputType: eachCol parameterType
+						valueType: eachCol cType "SQL_C_DEFAULT" "cdemers - For some reason SQL_C_DEFAULT does not work here for Unicode vlaues."
+						parameterType: eachCol type
+						columnSize: eachCol precision
+						decimalDigits: eachCol scale
+						parameterValuePtr: buf
+						bufferLength: (##(2 raisedTo: 16) min: buf byteSize)
+						strLenOrIndPtr: eachField lengthBuf)]! !
+!DBParameterizedStatement categoriesFor: #prepare!operations!private! !
+!DBParameterizedStatement categoriesFor: #setParams!operations!private! !
+
+!DBResultSet methodsFor!
+
+fetchScroll: orientationInteger offset: offsetInteger 
+	"Private - Fetch the specified row from the receiver's
+	result set. Answers true if a row was successfully
+	fetched, false for end of result set, and throws an
+	DBError exception if an error occurs"
+
+	| ret |
+	ret := self odbcLibrary 
+				sqlFetchScroll: self statementHandle
+				fetchOrientation: orientationInteger
+				fetchOffset: offsetInteger.
+	ret = SQL_NO_DATA_FOUND ifTrue: [^nil].
+	statement dbCheckException: ret.
+
+	"Unbound buffers must now retrieve all columns, bound
+	 buffers must retrieve long unbound columns"
+	buffer getData: statement.
+	^buffer status!
+
+odbcLibrary
+
+	^self statement odbcLibrary !
+
+odbcLibraryForString: aStringOrUnicodeString
+
+	"cdemers 11/15/2016"
+	^self statement odbcLibraryForString: aStringOrUnicodeString
+	! !
+!DBResultSet categoriesFor: #fetchScroll:offset:!positioning!private! !
+!DBResultSet categoriesFor: #odbcLibrary!public! !
+!DBResultSet categoriesFor: #odbcLibraryForString:!public! !
+
+!DBStatement methodsFor!
+
+executeStatement
+	"cdemers 11/15/2016"
+	^(self odbcLibraryForString: self sqlString)
+		sqlExecDirect: self allocatedHandle
+		statementText: self sqlString
+		textLength: SQL_NTS! !
+!DBStatement categoriesFor: #executeStatement!operations!private! !
+
+!DBTablesStatement methodsFor!
+
+executeStatement
+	"Private - Execute the database command that the receiver represents.
+	Answer the <integer> return code."
+
+	^(self odbcLibraryForString: tableType) 
+		sqlTables: self allocatedHandle
+		szTableQualifier: catalogName
+		cbTableQualifier: SQL_NTS
+		szTableOwner: schemaName
+		cbTableOwner: SQL_NTS
+		szTableName: tableName
+		cbTableName: SQL_NTS
+		szTableType: tableType
+		cbTableType: SQL_NTS! !
+!DBTablesStatement categoriesFor: #executeStatement!operations!private! !
+
+!GraphicsTool methodsFor!
+
+userLibrary
+
+	"Private - cdemers 10/26/2016"
+	"^((UserLibraryW default isWindowUnicode: self handle) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default"
+	"This is an inelegant way to do this.  In most cases the active window can determin the Unicode sstatus. "
+	^((UserLibraryW default isWindowUnicode:  SessionManager current inputState lastWindow asParameter ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default!
+
+userLibraryForString: aStringOrUnicodeString
+
+	"Private - cdemers 10/28/2016"
+	^((aStringOrUnicodeString class == UnicodeString ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default! !
+!GraphicsTool categoriesFor: #userLibrary!private! !
+!GraphicsTool categoriesFor: #userLibraryForString:!private! !
+
+!InputState methodsFor!
+
+lastWindow
+
+	"cdemers 10/26/2016 We may be able to use this to determin if we are working on a Unicode window."
+	^lastWindow! !
+!InputState categoriesFor: #lastWindow!public! !
+
+!KernelLibrary methodsFor!
+
+lstrcmpiW: aString1 lpString2: aString2
+  	"Answer -1, 0 or 1 depending on whether aString collates before, the same as, 
+	or after aString2 ignoring case (respectively).
+		int lstrcmpi(
+  			LPCTSTR lpString1,	// address of first string 
+			LPCTSTR lpString2 	// address of second string 
+		);
+
+	N.B. If you need more flexibility, implement the CompareStrings() call (which
+	this probably just layers on top of anyway)."
+	"cdemers 12/9/2016 Added for Unicode support." 
+
+	<stdcall: sdword lstrcmpiW lpstr lpstr>
+	^self invalidCall!
+
+lstrcmpW: aString1 lpString2: aString2
+  	"Answer -1, 0 or 1 depending on whether aString collates before, the same as, 
+	or after aString2 sensitive to case (respectively).
+		int lstrcmp(
+  			LPCTSTR lpString1,	// address of first string 
+			LPCTSTR lpString2 	// address of second string 
+		);
+
+	N.B. If you need more flexibility, implement the CompareStrings() call (which
+	this probably just layers on top of anyway)."
+	"cdemers 12/9/2016 Added for Unicode support." 
+
+	<stdcall: sdword lstrcmpW lpstr lpstr>
+	^self invalidCall! !
+!KernelLibrary categoriesFor: #lstrcmpiW:lpString2:!public!win32 functions-string manipulation! !
+!KernelLibrary categoriesFor: #lstrcmpW:lpString2:!public!win32 functions-string manipulation! !
+
+!ListView methodsFor!
+
+lvmGetItem: aLvItem
+	"Private - Retrieve the requested items attributes into the argument, aLvItem."
+
+	(self sendMessage: (self isUnicodeView ifTrue: [( LVM_GETITEM  - 5 + 75)] ifFalse: [  LVM_GETITEM ])wParam: 0 lpParam: aLvItem) == 0
+		ifTrue: [^self errorInCommonControlCall]!
+
+lvmGetStringWidth: aString
+	"Private - Answer the width of aString when displayed in this view."
+
+	| width |
+	width := self sendMessage: (self isUnicodeView ifTrue: [(LVM_GETSTRINGWIDTH  - 17 + 87)] ifFalse: [ LVM_GETSTRINGWIDTH ]) wParam: 0 lpParam: aString.
+	^width == 0
+		ifTrue: [self errorInCommonControlCall]
+		ifFalse: [width]!
+
+lvmSetColumn: anLvColumn at: columnIndex
+	"Private - Set the attributes of a column."
+"Must use LVM_SETCOLUMNW if we are Unicode"
+	(self sendMessage: ((self isUnicodeView and: [anLvColumn text class == UnicodeString ]) 
+			ifTrue: [(LVM_SETCOLUMN - 26 + 96)] ifFalse: [ LVM_SETCOLUMN]) wParam: columnIndex lpParam: anLvColumn asParameter) == 0
+				ifTrue: [^self errorInCommonControlCall]!
+
+lvmSetItem: anLvItem
+	"Private - Set some or all of the receivers default attributes as 
+	specified in the argument, anLvItem.
+	cdemers 11/1/2016 Revised for Unicode support."
+
+	(self 
+		sendMessage: (self isUnicodeView ifTrue: [(LVM_SETITEM - 6 + 76)] ifFalse: [ LVM_SETITEM])
+		wParam: 0
+		lpParam: anLvItem asParameter) == 0 
+		ifTrue: [^self errorInCommonControlCall]!
+
+onDisplayDetailsRequired: lvitem 
+	"Private - Get the display info for the receiver's row identified by the <LVITEM>, lvitem."
+
+	"N.B. This is a callback request from the ListView's paint handler so setting an
+	unconditional breakpoint in here may bring your image to its knees as the LV repeatedly
+	attempts to paint a damaged region."
+
+	"Implementation Note: If in report mode then the task of supplying the text/images is
+	delegated to the particular column, otherwise the valuables local to the receiver are used.
+	This may seem inconsistent, but it allows different text/images to be displayed for the
+	primary column if the application requires that the view be dynamically switchable between
+	#report mode and the other modes."
+
+	"cdemers 11/23/2016 Handle ANSI text in a Unicode view by converting if needed. "
+
+	| rowObject mask column columnIdx str|
+	rowObject := self objectFromHandle: lvitem handle ifAbsent: [UnknownItem].
+	"List sometimes asks for lvitem we no longer have, answer nil to accept default processing"
+	rowObject == UnknownItem ifTrue: [^nil].
+	self isReportMode 
+		ifTrue: 
+			[columnIdx := lvitem iSubItem + 1.
+			column := self columnAtIndex: columnIdx].
+	mask := lvitem mask.
+
+	"Image Request?"
+	(mask allMask: LVIF_IMAGE) 
+		ifTrue: 
+			[| imgIdx |
+			imgIdx := ((column notNil and: [self hasColumnImages]) ifTrue: [column] ifFalse: [self]) 
+						imageFromRow: rowObject.
+			imgIdx notNil ifTrue: [lvitem image: imgIdx - 1]].
+
+	"Text request?"
+	(mask allMask: LVIF_TEXT) 
+		ifTrue: 
+			["If in report mode the column's get text block is used unless the request
+			 is for the primary column and its text block is nil, in which case the view
+			 level block is used"
+			str := (((column notNil and: [columnIdx > 1 or: [column getTextBlock notNil]]) 
+						ifTrue: [column]
+						ifFalse: [self]) textFromRow: rowObject).
+			self isUnicodeView ifTrue: [str  := str asUnicodeString].
+			lvitem 
+				textInBuffer: str].
+	(mask allMask: LVIF_INDENT) 
+		ifTrue: 
+			["Indenting is only supported for the whole row, not on a per-column basis"
+			lvitem indent: (self indentFromRow: rowObject)].
+	^0	"suppress default processing"! !
+!ListView categoriesFor: #lvmGetItem:!accessing!private! !
+!ListView categoriesFor: #lvmGetStringWidth:!accessing!private! !
+!ListView categoriesFor: #lvmSetColumn:at:!columns!private! !
+!ListView categoriesFor: #lvmSetItem:!accessing!private! !
+!ListView categoriesFor: #onDisplayDetailsRequired:!event handling!private! !
+
+!ListView class methodsFor!
+
+initializeNotificationMap
+	"Private - Initialise the map of ListView notification codes to selector/parameter-class pairs.
+	N.B. This method must not be stripped in order to ensure that the notification event handler
+	methods (which are looked up in the table) are preserved.
+	"
+
+	"Implementation Note: Use an Array for best lookup performance since the notification
+	nodes are in a contiguous range, even if it is a little sparse"
+
+	| lvnMap |
+	lvnMap := (Array new: 78)
+				at: LVN_FIRST - LVN_ITEMCHANGING + 1 put: #lvnItemChanging:;
+				at: LVN_FIRST - LVN_ITEMCHANGED + 1 put: #lvnItemChanged:;
+				at: LVN_FIRST - LVN_INSERTITEM + 1 put: #lvnInsertItem:;
+				at: LVN_FIRST - LVN_DELETEITEM + 1 put: #nmDeleteItem:;
+				at: LVN_FIRST - LVN_DELETEALLITEMS + 1 put: #lvnDeleteAllItems:;
+				at: LVN_FIRST - LVN_BEGINLABELEDITA + 1 put: #nmBeginLabelEdit:;
+				at: LVN_FIRST - LVN_ENDLABELEDITA + 1 put: #nmEndLabelEdit:;
+				at: LVN_FIRST - LVN_COLUMNCLICK + 1 put: #lvnColumnClick:;
+				at: LVN_FIRST - LVN_BEGINDRAG + 1 put: #nmBeginDrag:;
+				at: LVN_FIRST - LVN_BEGINRDRAG + 1 put: #nmBeginRDrag:;
+				at: LVN_FIRST - LVN_ODCACHEHINT + 1 put: #nmDummy:;
+				at: LVN_FIRST - LVN_ITEMACTIVATE + 1 put: #lvnItemActivate:;
+				at: LVN_FIRST - LVN_ODSTATECHANGED + 1 put: #lvnODStateChanged:;
+				at: LVN_FIRST - LVN_HOTTRACK + 1 put: #nmDummy:;
+				at: LVN_FIRST - LVN_GETDISPINFOA + 1 put: #nmGetDispInfo:;
+				at: LVN_FIRST - LVN_GETDISPINFOW + 1 put: #nmGetDispInfo:; "Added for Unicode"
+				at: LVN_FIRST - LVN_SETDISPINFOA + 1 put: #nmSetDispInfo:;
+				at: LVN_FIRST - LVN_ODFINDITEMA + 1 put: #lvnFindItem:;
+				at: LVN_FIRST - LVN_KEYDOWN + 1 put: #nmKeyDown:;
+				at: LVN_FIRST - LVN_MARQUEEBEGIN + 1 put: #lvnMarqueeBegin:;
+				at: LVN_FIRST - LVN_GETINFOTIPA + 1 put: #lvnGetInfoTip:;
+				yourself.
+	lvnMap := lvnMap collect: [:each | each isNil ifTrue: [#nmDummy:] ifFalse: [each]].
+	self addClassConstant: 'LvnMap' value: lvnMap
+! !
+!ListView class categoriesFor: #initializeNotificationMap!initializing!must not strip!private! !
+
+!Menu methodsFor!
+
+userLibrary
+
+	"Private - cdemers 10/26/2016"
+	"cdemers 11/23/2016 Revised to use the class of self text to determin the UserLibrary to use."  
+	^((self text class == UnicodeString ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default! !
+!Menu categoriesFor: #userLibrary!private! !
+
+!MenuItem methodsFor!
+
+userLibrary
+
+	"Private - cdemers 10/26/2016"
+	"cdemers 11/23/2016 Revised to use the class of self text to determin the UserLibrary to use."  
+	^((self text class == UnicodeString ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default! !
+!MenuItem categoriesFor: #userLibrary!private!realizing/unrealizing! !
+
+!MessageBox methodsFor!
+
+userLibrary
+
+	"cdemers 12/1/2017 Retrun either the UserLibrary with either ANSI or Unicode support based on the kind of text string."
+	^((self text class == UnicodeString ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default! !
+!MessageBox categoriesFor: #userLibrary!public! !
+
+!Presenter class methodsFor!
+
+isUnicodeMode
+
+	"cdemers 12/2/2016 - Provide an event hook for translation managers to devide if we should open in Unicode mode."
+	| boolValue |
+
+	boolValue := self -> false.
+	self trigger: #isUnicodeRequested: with: boolValue.
+	^boolValue value!
+
+loadViewResource: aString inContext: aParentView 
+	"cdemers 10/20/2016 Use a creation block to set Unicode status."
+
+	| resourceIdentifier  newView |
+
+	self isUnicodeMode 
+		ifTrue: [resourceIdentifier := ResourceIdentifier class: self name: aString.
+			ShellView createHookBlock: 
+					[:shellView :createBlock | 
+					"| exStyle |
+					exStyle := shellView extendedStyle."
+					shellView isUnicodeView: true.
+					createBlock value.
+					"shellView extendedStyle: exStyle"].
+			[newView  := resourceIdentifier loadWithContext: aParentView] ensure: 
+				[ShellView createHookBlock: nil].
+			^newView]
+		ifFalse: [resourceIdentifier := ResourceIdentifier class: self name: aString.
+			^resourceIdentifier loadWithContext: aParentView]! !
+!Presenter class categoriesFor: #isUnicodeMode!public! !
+!Presenter class categoriesFor: #loadViewResource:inContext:!public! !
+
+!Prompter class methodsFor!
+
+isUnicodeMode
+
+	"cdemers 11/30/2016 decide the unicode type based on the active window."
+	^View active isUnicodeView. ! !
+!Prompter class categoriesFor: #isUnicodeMode!public! !
+
+!SymbolStringSearchPolicy methodsFor!
+
+compare: operand1 with: operand2
+	"Answer whether the <Object>, operand1, is considered equivalent to the <Object> argument,
+	operand2, by this search policy."
+	"cdemers 11/23/2016 Revised for Unicode support.  This may be innefficient."
+
+	^(operand1 asString trueCompare: operand2 asString) == 0
+!
+
+hash: operand
+	"Answer a suitable hash value for the <Object>, operand, under this search policy."
+	"cdemers 11/23/2016 Revised to accomodate UnicodeStrings"
+
+	^operand hash! !
+!SymbolStringSearchPolicy categoriesFor: #compare:with:!comparing!public! !
+!SymbolStringSearchPolicy categoriesFor: #hash:!comparing!public! !
+
+!TabView methodsFor!
+
+getItem: aninteger 
+	| tcItem |
+
+	"cdemers 12/5/2016 Revised for Unicode support."
+	tcItem := TCITEM new.
+	tcItem
+		text: (self stringClass newFixed: 256);
+		maskIn: tcItem imageValidMask.
+	self 
+		sendMessage: (self isUnicodeView ifTrue: [TCM_GETITEM-5+60] ifFalse: [TCM_GETITEM  ])
+		wParam: aninteger - 1
+		lpParam: tcItem asParameter.
+	^tcItem!
+
+tcmInsertItem: tcItem atOffset: anInteger
+	"Private - Insert a tab defined by tcItem to the receiver at offset anInteger."
+
+	"cdemers 12/5/2016 Revised for Unicode support."
+
+	^self sendMessage: ((tcItem text isKindOf: UnicodeString) ifTrue: [TCM_INSERTITEM -7+62] ifFalse: [TCM_INSERTITEM]) 
+		wParam: anInteger lpParam: tcItem asParameter!
+
+updateItem: anObject atIndex: aninteger 
+	"Re-render the specified item, which is at the specified <integer> index in the list."
+
+	"cdemers 12/5/2016 Revised for Unicdode."
+
+	| tcItem |
+	tcItem := self makeTcItemStruct: anObject.
+	self 
+		sendMessage: ((tcItem text isKindOf: UnicodeString) ifTrue: [TCM_SETITEM -6+61] ifFalse: [TCM_SETITEM])
+		wParam: aninteger - 1
+		lpParam: tcItem asParameter! !
+!TabView categoriesFor: #getItem:!helpers!private! !
+!TabView categoriesFor: #tcmInsertItem:atOffset:!adding!private! !
+!TabView categoriesFor: #updateItem:atIndex:!event handling!public! !
+
+!UnicodeCharacter methodsFor!
+
+isSeparator
+	"cdemers 11/30/2016 Taken and revised from Character.  Not sure if there may be a broader meaning in Unicode."
+	"Answer whether the receiver is a separator character (i.e. whitespace)."
+
+	^self codePoint == 32 or: [self codePoint >= 9 and: [self codePoint <= 13]]! !
+!UnicodeCharacter categoriesFor: #isSeparator!public! !
+
+!UnicodeString methodsFor!
+
+_collate: comparand
+	"Private - Answer the receiver's <integer> collation order with respect to 
+	the <readableString> argument, comparand. The answer is < 0 if
+	the receiver is lexically before the argument, 0 if lexically equivalent, or
+	> 0 if lexically after the argument. The comparision is CASE INSENSITIVE.
+	The comparison respects the currently configured default locale of the
+	host operating system, and the performance may disappoint in some cases."
+
+	"cdemers 12/9/2016 Added for Unicode support."
+
+	^KernelLibrary default lstrcmpiW: self lpString2: comparand asUnicodeString
+
+	"If you really don't care about Locale sensitive collation, then this is
+	even faster (C collation), especially if the C locale is set."
+
+"	^CRTLibrary default _stricmp: self string2: comparand."
+!
+
+displayString
+	"Answer a String representation of the receiver in a form suitable for
+	presentation to an end user.
+	Implementation Note: This is implemented purely for performance reasons to
+	avoid the Stream overhead when displaying strings because it is such a
+	common operation."
+
+	"cdemers 2017/11/10 Revised to return self due to Unicode UI support."
+
+	^self!
+
+includes: target
+	"Answer whether the argument, target, is one of the elements of the receiver.
+	Implementation Note: Override superclass to provide a more efficient implementation."
+	"cdemers 12/7/2016 Added to support Unicode, use equality since UnicodeCharacters are not based on identity."
+
+	1 to: self size do: [:i | target = (self at: i) ifTrue: [^true]].
+	^false!
+
+inspectorClass
+	
+	^super inspectorClass
+	"We may want to use a unicode inspector, but this isn't working well enough yet."
+	"^FlipperInspectorW"!
+
+show
+	"cdemers 11/17/2016 Show self in a Unicode MessageBox.  This is just for debugging, as a quick way of seeing a UnicodeString 
+		as a Unicode UI would render it." 
+	UserLibraryW default messageBoxW: View desktop asParameter lpText: self lpCaption: 'UnicodeString' asUnicodeString uType: 0!
+
+trueCompare: comparand
+	"Private - Answer the receiver's <integer> collation order with respect to 
+	the <readableString> argument, comparand. The answer is < 0 if
+	the receiver is lexically before the argument, 0 if lexically equivalent, or
+	> 0 if lexically after the argument. The comparision is CASE SENSITIVE.
+	Implementation Note: lstrcmp() is used, which is a word based comparison
+	which keeps, for example, hyphenated words together with equivalent
+	non-hyphenated words. This is useful, but slower than a basic string collation.
+	Also the comparison respects the currently configured default locale of the
+	host operating system, and the performance may disappoint in some cases."
+
+	"cdemers 12/9/2016 Added for Unicode support"
+	"The primitive simply invokes this OS case sensitive string collation function"
+	^KernelLibrary default lstrcmpW: self lpString2: comparand asUnicodeString! !
+!UnicodeString categoriesFor: #_collate:!private! !
+!UnicodeString categoriesFor: #displayString!printing!public! !
+!UnicodeString categoriesFor: #includes:!public! !
+!UnicodeString categoriesFor: #inspectorClass!public! !
+!UnicodeString categoriesFor: #show!public! !
+!UnicodeString categoriesFor: #trueCompare:!comparing!private! !
+
+!UnicodeString class methodsFor!
+
+newTest
+	
+	| ucStrByteArray |
+
+	ucStrByteArray := #[217 143 47 102 0 78 42 78 75 109 213 139]. " 'This is a test' - Google Translated to Chinese (simplified)."
+	^self fromAddress: ucStrByteArray yourAddress length: ucStrByteArray size / 2 .! !
+!UnicodeString class categoriesFor: #newTest!public! !
+
+!UserLibrary methodsFor!
+
+isWindowUnicode: hWnd
+	"Answer whether the window is a native unicode window"
+
+	<stdcall: bool IsWindowUnicode  handle>
+	^self invalidCall ! !
+!UserLibrary categoriesFor: #isWindowUnicode:!public! !
+
+!View methodsFor!
+
+basicCreateAt: position extent: extentPoint 
+	"Private - Create the Win32 window for the receiver, and answer its handle.
+	N.B. The window may not be properly subclassed - use #createAt:extent: instead."
+
+	| dwStyle |
+	dwStyle := self baseCreationStyle.
+	^self userLibrary 
+		createWindowEx: self extendedStyle
+		lpClassName: (self isUnicodeView ifTrue: [self class winClassNameW] ifFalse: [self class winClassName])
+		lpWindowName: self windowName
+		dwStyle: dwStyle
+		x: position x
+		y: position y
+		nWidth: extentPoint x
+		nHeight: extentPoint y
+		hWndParent: self creationParentView asParameter
+		hMenu: ((dwStyle anyMask: WS_CHILD) ifTrue: [self defaultId])
+		hInstance: VMLibrary default applicationHandle
+		lpParam: nil!
+
+isUnicodeView
+
+	"cdemers 10/19/2016  "
+	^flags anyMask: UnicodeMask!
+
+isUnicodeView: aBoolean
+
+	"cdemers 10/19/2016  "
+	flags := flags mask: UnicodeMask set: aBoolean!
+
+parentView: aView 
+	"Private - Sets the parent of the receiver to aView. Can only be used when the
+	receiver is not yet realized since Windows has a bug when reparenting"
+
+	creationParent := aView.
+	"cdemers 10/20/2016 Inherit the unicode status from our parent, except when the parent is the DesktopView."
+	"cdemers 1/4/2017 We need to avoid causing a recursion too deep by setting isUnicodeView: on non Dolphin views.
+		The TabViewXP asks for the curren focus view, if it is a non-Dolphin view then a view is created.  Normally that is fine,
+		but isUnicodeView: causes it to try to traverse its children and is causing a recursion."
+	(creationParent  class ~~ DesktopView and: [creationParent isDolphinWindow]) ifTrue: [self isUnicodeView:  creationParent isUnicodeView].
+	creationStyle at: 1 put: (self baseStyle mask: WS_CHILD set: true)!
+
+stringClass
+
+	"cdemers 10/19/2016 "
+	^self isUnicodeView ifTrue: [UnicodeString] ifFalse: [String]!
+
+userLibrary
+
+	"cdemers 10/19/2016 Retrun either the UserLibrary with either ANSI or Unicode support."
+	^(self isUnicodeView
+		ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default!
+
+userLibraryForString: aStringOrUnicodeString
+
+	"Private - cdemers 10/28/2016"
+	^((aStringOrUnicodeString class == UnicodeString ) ifTrue: [UserLibraryW] ifFalse: [UserLibrary]) default! !
+!View categoriesFor: #basicCreateAt:extent:!private!realizing/unrealizing! !
+!View categoriesFor: #isUnicodeView!public! !
+!View categoriesFor: #isUnicodeView:!public! !
+!View categoriesFor: #parentView:!hierarchy!private! !
+!View categoriesFor: #stringClass!public! !
+!View categoriesFor: #userLibrary!public! !
+!View categoriesFor: #userLibraryForString:!private! !
+
+!View class methodsFor!
+
+onStartup
+	"Perform post startup processing to initialize the View system"
+
+	WndClassAtom := nil.
+	WndClassAtomW := nil.
+
+	self allSubclassesDo: [:c |
+		(c class includesSelector: #onStartup) ifTrue: [c onStartup]].
+
+	"Load the Common Control Library."
+	CommCtrlLibrary openDefault.
+
+	"We start some distance away from the standard Windows IDs for command buttons
+	such as IDOK, etc, to avoid any clashes now or in future."
+	NextId := 4096.
+
+	"Register a hot key so that Ctrl+Break does not cancel dialogs (closes user interrupt walkback)"
+	UserLibrary default registerHotKey: nil id: 0 fsModifiers: MOD_CONTROL vk: VK_CANCEL.
+
+	ThemeLibrary default onStartup!
+
+registerClassW
+	"Private - Register the receivers corresponding Win32 class - answer the class atom.
+	Will work for subclasses that implement at least #winClassName, and 
+	optionally #winClassStyle and #winClassBrush"
+
+	| atom classStruct |
+	classStruct := (WNDCLASSW new)
+				className: self wndClassNameW;
+				lpfnWndProc: VMLibrary default getWndProc;
+				hInstance: VMLibrary default applicationHandle;
+				style: self winClassStyle;
+				hbrBackground: self winClassBrush asParameter;
+				hIcon: self winClassIcon asParameter;
+				hCursor: self winClassCursor asParameter;
+				yourself.
+	atom := UserLibraryW default registerClass: classStruct asParameter.
+	^atom == 0 ifTrue: [UserLibrary default systemError] ifFalse: [atom]!
+
+reregisterClassW
+	"Private - Un-register then re-register receivers corresponding Win32 class."
+
+	^self
+		unregisterClassW;
+		registerClassW
+!
+
+unregisterClassW
+	"Private - Unregister the receivers corresponding Win32 class - answer whether it succeeds."
+
+	^UserLibraryW default 
+		unregisterClass: self wndClassName 
+		hInstance: VMLibrary default applicationHandle!
+
+winClassNameW
+	"Private - Answer the Windows class name, or atom, to be used when creating Windows attached
+	to instances of the receiver."
+
+	"Use the string class name if one is set to allow for subclasses."
+	self winClassName isInteger ifFalse: [^self winClassName asUnicodeString].
+	WndClassAtomW isNil ifTrue: [WndClassAtomW := self reregisterClassW].
+	^WndClassAtomW!
+
+wndClassNameW
+	"Private - Answer the Windows class name to be registered with Win32 for instances of the receiver.
+	Typically it is not necessary to override this message when creating custom views, the exceptional
+	cases being when one wants different attributes associated with the Window class than the Dolphin
+	defaults."
+
+	^'DolphinWindowW'! !
+!View class categoriesFor: #onStartup!event handling!public! !
+!View class categoriesFor: #registerClassW!operations!private! !
+!View class categoriesFor: #reregisterClassW!operations!private! !
+!View class categoriesFor: #unregisterClassW!operations!private! !
+!View class categoriesFor: #winClassNameW!constants!private! !
+!View class categoriesFor: #wndClassNameW!constants!private! !
+
+"End of package definition"!
+
