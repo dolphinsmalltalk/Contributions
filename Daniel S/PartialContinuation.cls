@@ -36,7 +36,7 @@ value: anObject
 	answerProcess := marker process.
 	answerProcess suspend.
 	ProcessPatcher patch: partialProcess onto: marker.
-	answerProcess resize: answerProcess size " + 1 removed which broke WAFlowPlatrformTest>>testSuspendCallbackDo (incorrect receiver on resumption). All partial continuation-related tests run green without".
+	answerProcess resize: answerProcess size " + 1 removed which broke WAFlowPlatformTest>>testSuspendCallbackDo (incorrect receiver on resumption)".
 	answerProcess at: answerProcess size put: anObject.
 	answerProcess topFrame sp: answerProcess size.
 	"Useful for working out what's going on:
