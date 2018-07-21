@@ -1,4 +1,4 @@
-| package |
+﻿| package |
 package := Package name: 'DS Partial Continuations'.
 package paxVersion: 1;
 	basicComment: 'Partial Continuations support for Dolphin Smalltalk
@@ -18,7 +18,6 @@ package classNames
 	add: #ContinuationDelimiterRequest;
 	add: #ExceptionHandlerChainCookie;
 	add: #PartialContinuation;
-	add: #PartialContinuationTest;
 	add: #PartialProcessCopier;
 	add: #ProcessPatcher;
 	yourself.
@@ -34,6 +33,7 @@ package methodNames
 	add: #Object -> #mark:;
 	add: #Process -> #copyFrom:to:;
 	add: #Process -> #fixSuspendedFrame;
+	add: #Process -> #stackFramesFrom:depth:;
 	add: #StackFrame -> #receiver:;
 	yourself.
 
@@ -44,9 +44,8 @@ package globalAliases: (Set new
 	yourself).
 
 package setPrerequisites: (IdentitySet new
-	add: '..\..\Core\Object Arts\Dolphin\Base\Dolphin';
-	add: '..\..\Core\Object Arts\Dolphin\System\Continuations\Dolphin Continuations';
-	add: '..\..\Core\Contributions\Camp Smalltalk\SUnit\SUnit';
+	add: '..\Core\Object Arts\Dolphin\Base\Dolphin';
+	add: '..\Core\Object Arts\Dolphin\System\Continuations\Dolphin Continuations';
 	yourself).
 
 package!
@@ -80,11 +79,6 @@ AbstractPartialProcessCopier subclass: #PartialProcessCopier
 	classInstanceVariableNames: ''!
 AbstractPartialProcessCopier subclass: #ProcessPatcher
 	instanceVariableNames: 'patchFrames'
-	classVariableNames: ''
-	poolDictionaries: ''
-	classInstanceVariableNames: ''!
-TestCase subclass: #PartialContinuationTest
-	instanceVariableNames: 'crossKK counter'
 	classVariableNames: ''
 	poolDictionaries: ''
 	classInstanceVariableNames: ''!
@@ -154,7 +148,7 @@ copyForProcessCopier
 mark: aBlock
 	| homeFrame |
 	homeFrame := Processor activeProcess topFrame.
-	^aBlock on: ContinuationDelimiterRequest do: [:ex | ex resume: homeFrame].! !
+	^aBlock on: PartialContinuation markerRequest do: [:ex | ex resume: homeFrame].! !
 !Object categoriesFor: #callcc:!public! !
 !Object categoriesFor: #copyForProcessCopier!public! !
 !Object categoriesFor: #mark:!public! !
@@ -174,9 +168,22 @@ fixSuspendedFrame
 	self
 		resize: sp;
 		at: sp put: self.
-	suspended sp: sp.! !
+	suspended sp: sp.!
+
+stackFramesFrom: aStackFrame depth: anInteger
+
+	| stackFrames frame |
+
+	stackFrames := OrderedCollection new: (anInteger min: 32).
+	frame := aStackFrame.
+	[frame isNil or: [stackFrames size = anInteger]] whileFalse: 
+		[stackFrames add: frame.
+		frame := frame sender].
+
+	^stackFrames! !
 !Process categoriesFor: #copyFrom:to:!public! !
 !Process categoriesFor: #fixSuspendedFrame!copying!public! !
+!Process categoriesFor: #stackFramesFrom:depth:!public! !
 
 !StackFrame methodsFor!
 

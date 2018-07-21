@@ -1,4 +1,4 @@
-"Filed out from Dolphin Smalltalk 7"!
+﻿"Filed out from Dolphin Smalltalk 7"!
 
 AbstractPartialProcessCopier subclass: #ProcessPatcher
 	instanceVariableNames: 'patchFrames'
@@ -50,7 +50,11 @@ pasteBasicCopyOfStack
 	clone suspendedFrame: (clone frameAtIndex: source topFrame index + seamIndex)!
 
 patch: aPartialProcess onto: aStackFrame 
-	baseFrame := aStackFrame sender.	"??? Need to avoid ending up with duplicate stack frames?"
+
+	baseFrame := aStackFrame. 
+	"Previously baseFrame was 'aStackFrame sender' with the comment '??? Need to avoid ending up with duplicate stack frames?'
+	Stack capture has now been changed to be exclusive of 'to' frame (see PartialContinuation>>initializeFrom:to:) which has removed the need for sender"
+	
 	source := aPartialProcess.
 	clone := baseFrame process.
 	seamIndex := baseFrame sp.

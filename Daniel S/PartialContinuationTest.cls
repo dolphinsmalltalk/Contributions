@@ -1,4 +1,4 @@
-"Filed out from Dolphin Smalltalk 7"!
+﻿"Filed out from Dolphin Smalltalk 7"!
 
 TestCase subclass: #PartialContinuationTest
 	instanceVariableNames: 'crossKK counter'
@@ -24,9 +24,16 @@ ensureWithReturnInner: kk
 ensureWithReturnNotVeryFarInner: kk 
 	[kk value: 3] ensure: [^0].!
 
+markDiscardingResultOf: aBlock
+	| home |
+
+	home := Processor activeProcess topFrame.
+
+	aBlock on: PartialContinuation markerRequest do: [ :request | request resume: home ]!
+
 markWithCounter: aBlock
 	| answer |
-	answer := aBlock on: ContinuationDelimiterRequest
+	answer := aBlock on: PartialContinuation markerRequest
 				do: 
 					[:ex |
 					ex resume: Processor activeProcess topFrame homeFrame.
@@ -188,6 +195,30 @@ testMarkerOnValue
 	self deny: captured.
 	self assert: seen!
 
+testMarkerOnValueDiscardingResult
+
+	"Previously-failing test from WAPartialContinuationTest>>testMarkerOnValue"
+
+	| kk captured seen |
+	captured := false.
+	seen := false.
+	self	shouldnt: [
+			self markDiscardingResultOf: [ | value |
+				value := self callcc: [ :cc | kk := cc. captured := true ].
+				seen := true.
+				value ] ]
+		raise: Error.
+		
+	self assert: captured.
+	self assert: seen.
+	captured := false.
+	seen := false.
+	"Make sure the marker method is not included in the continuation and the continuation returns directly
+	into the marker method."
+	self assert: (self mark: [ kk value: 123. 456 ]) = 123.
+	self deny: captured.
+	self assert: seen!
+
 testMarkFrameIsNotDuplicated
 	| kk |
 	self markWithCounter: [2 * (self callcc: 
@@ -246,6 +277,30 @@ testNoMarkerOnValue
 	self deny: captured.
 	self assert: seen!
 
+testNoMarkerOnValueDiscardingResult
+
+	"Copied from WAPartialContinuationTest>>testNoMarkerOnValue"
+
+	| kk captured seen |
+	captured := false.
+	seen := false.
+	self	shouldnt: [
+			self markDiscardingResultOf: [
+				| value |
+				value := self callcc: [ :cc | kk := cc. captured := true ].
+				seen := true.
+				value ] ]
+		raise: Error.
+		
+	self assert: captured.
+	self assert: seen.
+	captured := false.
+	seen := false.
+	"Make sure the marker method was not included in the continuation"
+	self assert: (kk value: 123) = 123.
+	self deny: captured.
+	self assert: seen!
+
 testReentrant
 	| kk |
 	self 
@@ -262,6 +317,7 @@ testSimple
 !PartialContinuationTest categoriesFor: #crossProcessExpiredInner!public! !
 !PartialContinuationTest categoriesFor: #ensureWithReturnInner:!public! !
 !PartialContinuationTest categoriesFor: #ensureWithReturnNotVeryFarInner:!public! !
+!PartialContinuationTest categoriesFor: #markDiscardingResultOf:!private! !
 !PartialContinuationTest categoriesFor: #markWithCounter:!public! !
 !PartialContinuationTest categoriesFor: #testCrossProcess!public! !
 !PartialContinuationTest categoriesFor: #testCrossProcessExpired!public! !
@@ -272,10 +328,12 @@ testSimple
 !PartialContinuationTest categoriesFor: #testExceptionHandling!public! !
 !PartialContinuationTest categoriesFor: #testIfCurtailedThenSignal!public! !
 !PartialContinuationTest categoriesFor: #testMarkerOnValue!public! !
+!PartialContinuationTest categoriesFor: #testMarkerOnValueDiscardingResult!public! !
 !PartialContinuationTest categoriesFor: #testMarkFrameIsNotDuplicated!public! !
 !PartialContinuationTest categoriesFor: #testNestedEvaluation!public! !
 !PartialContinuationTest categoriesFor: #testNoMarkerOnCall!public! !
 !PartialContinuationTest categoriesFor: #testNoMarkerOnValue!public! !
+!PartialContinuationTest categoriesFor: #testNoMarkerOnValueDiscardingResult!public! !
 !PartialContinuationTest categoriesFor: #testReentrant!public! !
 !PartialContinuationTest categoriesFor: #testSimple!public! !
 
